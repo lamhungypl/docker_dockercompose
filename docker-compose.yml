@@ -1,0 +1,46 @@
+version: "3"
+
+services:
+  db:
+    container_name: mysql
+    image: mysql:latest
+    ports:
+      - "7200:3306"
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./databases/config:/etc/mysql/conf.d
+      - ./databases/db:/var/lib/mysql
+    networks:
+      - backend
+  apache:
+    container_name: apache
+    build:
+      context: ./webserver
+    depends_on:
+      - php
+      - db
+    ports:
+      - "8001:80"
+    volumes:
+      - ./public-html/:/var/www/html/
+    networks:
+      - frontend
+      - backend
+  php:
+    container_name: php
+    build:
+      context: "./phpcode/"
+    networks:
+      - backend
+    volumes:
+      - ./public-html/:/var/www/html/
+
+networks:
+  frontend:
+  backend:
+volumes:
+  data:
